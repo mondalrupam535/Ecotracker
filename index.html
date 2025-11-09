@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>EcoTracker — Carbon Tracker</title>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- LOGIN / SIGNUP MODAL -->
+  <div id="auth-screen" class="screen center">
+    <div class="card auth-card">
+      <h1 class="brand">EcoTracker</h1>
+      <div id="auth-forms">
+        <!-- LOGIN -->
+        <form id="login-form" class="form">
+          <h2>Login</h2>
+          <input id="login-username" placeholder="Username" autocomplete="username" required />
+          <input id="login-password" type="password" placeholder="Password" autocomplete="current-password" required />
+          <button type="button" id="login-btn">Sign in</button>
+          <p class="switch">No account? <a id="show-signup">Create one</a></p>
+        </form>
+
+        <!-- SIGNUP (hidden initially) -->
+        <form id="signup-form" class="form hidden">
+          <h2>Create account</h2>
+          <input id="signup-username" placeholder="Choose username" autocomplete="username" required />
+          <input id="signup-password" type="password" placeholder="Choose password" autocomplete="new-password" required />
+          <button type="button" id="signup-btn">Create account</button>
+          <p class="switch">Have an account? <a id="show-login">Sign in</a></p>
+        </form>
+      </div>
+      <p class="small muted">Data stored locally for the demo. Ready for server/API integration.</p>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="screen hidden">
+    <aside class="sidebar">
+      <div class="brand-compact">
+        <div class="logo">E</div>
+        <div>
+          <div class="app-title">EcoTracker</div>
+          <div class="app-sub">Track • Reduce • Earn</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-btn active" data-page="dashboard">Dashboard</button>
+        <button class="nav-btn" data-page="add">Add Activity</button>
+        <button class="nav-btn" data-page="tips">Tips</button>
+        <button class="nav-btn" data-page="leader">Leaderboard</button>
+      </nav>
+
+      <div class="user-card">
+        <div class="user-info">
+          <div id="user-avatar" class="avatar">U</div>
+          <div>
+            <div id="user-name">User</div>
+            <div class="muted">Credits: <span id="user-credits">0</span></div>
+          </div>
+        </div>
+        <button id="logout" class="small-cta">Sign out</button>
+      </div>
+
+      <div class="note muted">Prototype — replace local storage with backend & APIs for production.</div>
+    </aside>
+
+    <main class="main">
+      <!-- DASHBOARD -->
+      <section id="page-dashboard" class="page card visible">
+        <div class="hero">
+          <div>
+            <h2 id="welcome">Welcome</h2>
+            <p class="muted">Your personal carbon tracker and credit system.</p>
+          </div>
+          <div>
+            <button id="quick-add" class="cta">Add Activity</button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat card small">
+            <div class="muted">Today (CO₂)</div>
+            <div id="today-co2" class="stat-value">0 kg</div>
+            <div class="muted small">From activities logged today</div>
+          </div>
+          <div class="stat card small">
+            <div class="muted">Weekly Avg</div>
+            <div id="week-avg" class="stat-value">0 kg</div>
+            <div class="muted small">7-day average</div>
+          </div>
+          <div class="stat card small">
+            <div class="muted">Green Credits</div>
+            <div id="show-credits" class="stat-value">0</div>
+            <div class="muted small">Earned by reducing emissions</div>
+          </div>
+        </div>
+
+        <div class="flex">
+          <div class="card panel">
+            <h4>Activity breakdown (today)</h4>
+            <div id="breakdown" class="list muted">No activities yet — add one in "Add Activity".</div>
+          </div>
+
+          <div class="card panel">
+            <h4>Trends (7 days)</h4>
+            <canvas id="trendChart" height="140"></canvas>
+            <hr />
+            <h4 style="margin-top:10px">Badges</h4>
+            <div id="badges" class="chips"><span class="chip muted">No badges yet</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADD ACTIVITY -->
+      <section id="page-add" class="page card hidden">
+        <h3>Add Activity (natural language)</h3>
+        <p class="muted">Type like: "drove 10 km and used AC for 2 hours"</p>
+
+        <div class="input-row">
+          <input id="nl-text" placeholder='e.g., "I biked 5 km and ate chicken"' />
+          <button id="parse-btn" class="cta">Parse & Add</button>
+        </div>
+
+        <div class="last-parsed card" id="parsed-output" aria-live="polite"></div>
+
+        <hr />
+
+        <h4>Or quick add</h4>
+        <div class="grid-3">
+          <select id="quick-activity">
+            <option value="">Choose</option>
+            <option value="car">Car (km)</option>
+            <option value="bus">Bus (km)</option>
+            <option value="bike">Bike (km)</option>
+            <option value="ac">AC (hours)</option>
+            <option value="electricity">Electricity (kWh)</option>
+            <option value="chicken">Chicken (serving)</option>
+            <option value="beef">Beef (serving)</option>
+          </select>
+          <input id="quick-amount" type="number" placeholder="Amount" min="0.1" step="0.1" />
+          <button id="quick-add-btn" class="cta">Add</button>
+        </div>
+      </section>
+
+      <!-- TIPS -->
+      <section id="page-tips" class="page card hidden">
+        <h3>Suggested Actions</h3>
+        <div id="tips-box" class="chips">
+          <span class="chip">Log activities to get personalized tips.</span>
+        </div>
+        <div class="muted small" style="margin-top:12px">Note: tips are rule-based in this demo. Replace with an LLM call for richer personalization.</div>
+      </section>
+
+      <!-- LEADERBOARD -->
+      <section id="page-leader" class="page card hidden">
+        <h3>Leaderboard</h3>
+        <div id="leader-list" class="list muted">No users yet. Invite friends to compete!</div>
+      </section>
+
+      <footer class="muted small" style="margin-top:16px">Built by team Smart Hacks</footer>
+    </main>
+  </div>
+
+  <!-- Script -->
+  <script src="script.js"></script>
+</body>
+</html>
